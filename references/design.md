@@ -32,13 +32,15 @@ Avoid every one of these. They are the visual equivalent of "delve".
 
 1. **One idea per slide, stated as a sentence.** The title is the point, not the topic.
 2. **Scale contrast is the design.** Headline 96 to 320px against body 26 to 32px and labels 18 to 22px. Three sizes, maybe four. Never a smooth ramp of six similar sizes.
-3. **Asymmetry with intent.** Place the mass off-center: hard splits (7/5, 8/4, 3/9), a margin rail, a numeral bleeding off the edge. Leave 35 to 50 percent of the slide empty, and make the empty part feel chosen.
+3. **Asymmetry with intent, and a full frame.** Place the mass off-center: hard splits (7/5, 8/4, 3/9), a margin rail, a numeral bleeding off the edge. Whitespace should feel chosen: a calm margin or a breathing column. A dead bottom third reads as unfinished, not as restraint. Size the main visual so it uses the height of the slide; content on most slides reaches below y 760. The audit flags `empty-bottom`; add `data-open` to a slide only when the emptiness is the point (a statement, a single number).
 4. **One signature device per deck.** A thick accent rule, a giant italic numeral, a margin annotation column, a dimension line, an exposed grid. Repeat it so the deck feels authored by one hand. Pick it from the direction.
 5. **A grid you can feel.** Use a 12-column grid with 96px outer margins and 24px gutters on the 1920 stage. Align edges to it. Break it once per slide at most, on purpose.
 6. **Rules and type over boxes.** Separate content with hairlines, column rules and whitespace before you reach for cards. If you use a filled panel, use one, flat, full-bleed to an edge.
-7. **Rhythm across the deck.** Alternate dense and sparse slides. Alternate light and dark (or paper and accent) grounds at section changes. Never two adjacent slides with the same `data-layout`.
-8. **Specific visuals beat generic ones.** Draw the actual architecture, the actual numbers, the actual sequence. Invent one or two visual metaphors that only make sense for this content (see components.md, section "Bespoke components").
-9. **Finish like print.** Optical sizes on variable fonts, `text-wrap: balance` on headings, `text-wrap: pretty` on body, tabular numbers in tables (`font-variant-numeric: tabular-nums`), hanging quotes, consistent baseline spacing.
+7. **One system, many compositions.** Cohesion beats variety. Fix the system once and repeat it on every slide: title anchor position and size, kicker style, margins, footer and folio, panel and card treatment, chart style, depth treatment. Then vary the composition of the visual half (diagram, number, list, chart). A reviewer should be able to tell any slide belongs to this deck from a thumbnail. Variety for its own sake makes a deck feel like five templates stapled together.
+8. **Pops of color.** A monotone deck looks unfinished. Use the accent deliberately: the key word in a headline, the one bar that matters, the active node, a thin rule. Give the deck one or two accent-ground moments (a section opener, the ask, the close). Dark directions also benefit from depth: a soft radial glow behind the hero element, a subtle gradient in the ground, grain.
+9. **Rhythm across the deck.** Alternate dense and sparse slides. Change ground at section boundaries.
+10. **Specific visuals beat generic ones.** Draw the actual architecture, the actual numbers, the actual sequence. Invent one or two visual metaphors that only make sense for this content (see components.md, section "Bespoke components").
+11. **Finish like print.** Optical sizes on variable fonts, `text-wrap: balance` on headings, `text-wrap: pretty` on body, tabular numbers in tables (`font-variant-numeric: tabular-nums`), hanging quotes, consistent baseline spacing.
 
 ## 3. Directions (moodboards)
 
@@ -101,14 +103,14 @@ Font URLs: Google Fonts `https://fonts.googleapis.com/css2?family=Name:wght@400;
 - Motion: Smooth. `draw` for plots and diagrams, `lines` titles, steps for derivations.
 
 **Night Signal** (vision talks, keynote openers, AI and product launches)
-- Type: Unbounded or Syne 800 display; Satoshi (Fontshare) body; Martian Mono labels.
+- Type: Clash Display 600 (Fontshare) or Funnel Display 700 display; Satoshi (Fontshare) body; Martian Mono labels. Unbounded and Syne are ultra-wide; use them only if the user picks that look.
 - Color: `#08090B`, fg `#F2F0EA`, muted `#8B8A86`, one luminous accent `#FF5A1F` or `#00E0B8`.
 - Device: a single soft glow behind the key element, giant numerals, deep black space.
 - Motion: Cinematic or Insane. `flowfield` fx on openers, iris cuts, `chars` titles.
 
 ## 4. Layout archetypes (1920x1080)
 
-Set `data-layout` on every slide to one of these names (or a new descriptive name). Plan the sequence in brief.json so no two neighbors match and a 10-slide deck uses at least 5.
+Set `data-layout` on every slide to one of these names (or a new descriptive name). Plan the sequence in brief.json. Neighbors usually differ, but a run of the same archetype is fine when the content is a series (three code steps, a sequence of index slides). Consistency of the system matters more than archetype count.
 
 | name | composition |
 |---|---|
@@ -139,7 +141,9 @@ when rows must align. Always keep text inside 96px margins unless the element is
 
 ## 5. Typography rules
 
-- Two families plus a mono at most. Distinctive display face, quiet text face. Set the stack in `--font-display`, `--font-body`, `--font-mono`.
+- Two families plus a mono at most. Distinctive display face, quiet text face.
+- Stay inside the chosen direction's faces. Extreme display faces (ultra-wide, ultra-condensed, novelty, script) only when the user picked them in the interview or named them. If you skipped the interview, choose the direction's default display face, which is chosen to be striking and readable.
+- Missing glyph (for example the rupee sign in a Latin display face): keep the display face and add a fallback face for that glyph only, with `unicode-range` in an `@font-face` rule or by listing a covering face second in the stack. Check the glyph in the snapshots. Set the stack in `--font-display`, `--font-body`, `--font-mono`.
 - Display: tight tracking (-0.02 to -0.05em), line-height 0.85 to 1.0, optical size high. Body: line-height 1.35 to 1.55, 26 to 32px, max 60 characters per line.
 - Mono labels: uppercase, 18 to 22px, tracking +0.06 to +0.14em. Use them for kickers, axes, sources, folios.
 - Use italics or a second weight for emphasis inside a headline, not color plus bold plus underline.
@@ -160,4 +164,8 @@ when rows must align. Always keep text inside 96px margins unless the element is
 - Use images from the user's sources first (screenshots, figures from the paper, product shots). Copy them next to the deck and reference them relatively.
 - Stock photography (Unsplash) only when the user agrees. Credit the photographer in the slide notes. Never imply a stock photo shows the user's product or people.
 - Never put text over a busy image without a solid or scrimmed panel.
+- Decks must look sharp on 2K (2560x1440) and 4K (3840x2160) screens. Type, SVG and CSS are vector and scale cleanly, and
+  the engine renders canvas fx at native density. Raster images are the weak spot: supply them at 2x their size on the
+  1920 stage (a full-bleed photo should be 3840 px wide, a 600 px figure 1200 px). Prefer SVG for diagrams, logos and
+  icons, and redraw low-resolution figures from a source as SVG when they are simple. Avoid hairlines under 1.5 px.
 - Brand book or brand site provided: extract its tokens (colors, faces, logo, voice rules) into `:root`, record them in brief.json under `brand`, and let the brand override the direction. Keep the layout ambition.

@@ -100,7 +100,8 @@ class Deck:
 
     def node(self, s, x, y, w, h, label, sub=None, fill=None, fg=None, line=None, name=None):
         box = self.rect(s, x, y, w, h, fill=fill or self.t["bg"], line=line or self.t["fg"], name=name)
-        self.text(s, x + 24, y + 22, w - 48, 40, label, font="mono", size=24, color=fg)
+        size = max(14, min(24, int((w - 48) / (0.62 * max(1, len(label))))))  # mono advance is about 0.6em
+        self.text(s, x + 24, y + 22, w - 48, 40, label, font="mono", size=size, color=fg)
         if sub: self.text(s, x + 24, y + 62, w - 48, 40, sub, font="body", size=19, color=self.t.get("muted"))
         return box
 

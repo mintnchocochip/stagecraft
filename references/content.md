@@ -8,7 +8,12 @@ the build checks it. This is what makes two runs on the same sources say the sam
 Set `source_policy` in brief.json:
 
 - `strict` (default): only the user's sources and what the user said in chat. No outside facts, no invented numbers, no
-  "industry average" filler. If a slide needs a fact the sources do not have, leave it out or ask.
+  "industry average" filler. If a slide needs a fact the sources do not have, leave it out. Ask only if the user is
+  available for questions; when they said "just build it", leave it out and mention the gap at delivery.
+  This applies to words as well as numbers: a caption or label must not assert anything the sources do not say. The
+  build only checks numbers, so read every caption against its claims before delivering, and remove (do not just
+  flag) any line the sources do not support. Illustrative content (a sample SMS, a mock screen) must be labelled
+  "illustrative" on the slide.
 - `augment`: the user explicitly allowed outside knowledge ("add context", "fill gaps", "research this"). Facts from your own
   knowledge go in the ledger with a source of kind `model`. Facts from web research get a `url` source with the page as the ref.
   The build lists every `model` claim so you can tell the user what to verify.
@@ -18,7 +23,7 @@ The user's own words in chat are a source: add `{ "id": "U", "ref": "user, chat 
 ## Reading sources
 
 - **Codebase:** read the README, entry points, config, and the modules the talk is about. If the repo has a knowledge graph or
-  map (graphify, a map skill, ARCHITECTURE.md), use it first. Pull real names, real numbers (limits, timeouts, counts), real
+  map (graphify output, a map skill, ARCHITECTURE.md), use it first; if it does not exist, read the source directly. Pull real names, real numbers (limits, timeouts, counts), real
   call paths. Locator format: `path/to/file.py:120` or `file.py > function_name`.
 - **Docs, markdown, notes:** quote headings and key sentences verbatim. Locator: section heading.
 - **Papers (PDF):** extract text (pdftotext, pypdf, or the pdf skill). Use the paper's own figures, numbers, and wording for
@@ -39,6 +44,7 @@ Write it next to the deck before any slide HTML. It is the single source of trut
   "source_policy": "strict",
   "register": "technical and plain; short declarative sentences; identifiers in mono",
   "format": "html",
+  "duration": "10 minutes",
   "motion_default": 2,
   "direction": "Terminal Noir, amber accent",
   "sources": [
@@ -58,11 +64,19 @@ Write it next to the deck before any slide HTML. It is the single source of trut
 ```
 
 Field rules:
-- `sources[].ref` is a path relative to brief.json, or a URL. `kind`: code, doc, paper, data, url, video, user, model.
+- `sources[].ref` is a path relative to brief.json, an absolute path (needed when the deck and sources sit on different
+  drives), or a URL. `kind`: code, doc, paper, data, url, video, user, model.
+- Pasted notes from chat: save them verbatim to `source-notes.md` next to brief.json and use that file as a source, so quotes get checked.
 - `claims[].text` is the fact in the exact wording and number format the slide will show ("1.2 s", "38%", "12 turns").
   The build checks every number that appears on a slide or in notes against claim texts and quotes.
 - `claims[].quote` is copied verbatim from the source (whitespace may differ). For local text sources the build verifies the
-  quote exists in the file. A paraphrase in `quote` fails the build. For PDFs and URLs, still quote exactly; the build cannot check those, so be careful.
+  quote exists in the file (text files, and .docx/.pdf/.pptx when python-docx, pypdf or python-pptx is installed). A
+  paraphrase in `quote` fails the build. When a source cannot be read, the build warns that its quotes were not
+  verified; extract it to a .txt source and cite that instead. URLs are never checked, so quote them exactly.
+- The build also warns when a slide shows a number that is in the ledger but not in the claims that slide cites. Cite the right claim.
+- Decorative numerals (folios, step markers like 1 2 3, section numbers) go in elements marked `data-deco`, or the
+  number check will reject them. Text inside `<code>` and `<pre>` is exempt from the dash and number checks because it
+  must stay verbatim.
 - Derived numbers (a percentage you computed from two sourced numbers) get their own claim with `"source"` of the inputs'
   source and the arithmetic in `locator`, for example `"locator": "C3 / C4"`.
 - `slides[]` is the outline. `role`: cover, point, mechanism, evidence, explain, compare, story, section, close. Every slide

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render a built deck with headless Chrome/Edge: layout audit, per-slide PNGs, a contact sheet, optional PDF.
 
-usage: python snapshot.py deck.html [--out DIR] [--slides 1,3,5] [--pdf] [--no-shots]
+usage: python snapshot.py deck.html [--out DIR] [--slides 1,3,5] [--pdf] [--no-shots] [--res 1080|1440|2160]
 
 Prints the audit (offstage, clipped, overlap, tiny-text, low-contrast) per slide.
 Look at contact.png after every build; open single slide PNGs when something looks off.
@@ -39,9 +39,9 @@ def find_browser():
     sys.exit("snapshot: no Chrome/Edge/Chromium found. Set KX_CHROME to the browser path, or review the deck in a browser tool with ?audit")
 
 
-def run(browser, args, url, profile):
+def run(browser, args, url, profile, dpr=1):
     cmd = [browser, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run", "--no-default-browser-check",
-           "--allow-file-access-from-files", f"--user-data-dir={profile}", "--force-device-scale-factor=1", *args, url]
+           "--allow-file-access-from-files", f"--user-data-dir={profile}", f"--force-device-scale-factor={dpr}", *args, url]
     return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="ignore", timeout=120)
 
 
@@ -52,6 +52,7 @@ def main():
     ap.add_argument("--slides", help="comma list of 1-based slide numbers to shoot (default all)")
     ap.add_argument("--pdf", action="store_true")
     ap.add_argument("--no-shots", action="store_true")
+    ap.add_argument("--res", type=int, default=1080, choices=[1080, 1440, 2160], help="PNG height: 1080 (HD), 1440 (2K), 2160 (4K)")
     a = ap.parse_args()
     try: sys.stdout.reconfigure(encoding="utf-8")
     except Exception: pass
@@ -83,7 +84,7 @@ def main():
     if not a.no_shots:
         for k in want:
             png = out / f"slide-{k:02d}.png"
-            run(browser, [f"--screenshot={png}", "--window-size=1920,1080", "--virtual-time-budget=6000"], f"{url}?static&motion=0#{k}", profile)
+            run(browser, [f"--screenshot={png}", "--window-size=1920,1080", "--virtual-time-budget=6000"], f"{url}?static&motion=0#{k}", profile, dpr=a.res / 1080)
             if png.exists():
                 shots.append(png)
         try:

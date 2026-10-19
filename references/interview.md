@@ -4,7 +4,9 @@ Run it after a quick skim of the sources and before any slide code. The point is
 look with the user, so the build has a target. Ask everything in one round. Use the AskUserQuestion tool when available
 (up to 4 questions per call, so use two calls back to back if needed); otherwise send one numbered message.
 
-Do not ask what you can already tell from the request or the sources. If the user already said "10 slides for the board",
+Do not ask what you can already tell from the request or the sources. When you skip the interview, prefer the
+direction's default faces and a cohesive, restrained system over anything extreme; list your choices at delivery so
+the user can push it further. If the user already said "10 slides for the board",
 do not ask length or audience. If they said "just build it" or gave all answers, skip the interview and state your
 assumptions in one short paragraph before building.
 
@@ -17,7 +19,8 @@ assumptions in one short paragraph before building.
    - Team review, read along (more self-contained slides)
    - Sent as a file and read alone (reading deck, denser, notes become body copy)
    - Investors or executives (outcome first)
-3. **Moodboard direction.** Offer three directions from design.md that fit, each with a one-line feel and its fonts and colors,
+3. **Moodboard direction.** Offer three directions from design.md that fit, each with a one-line feel, its display face named
+   and described (for example "Unbounded, very wide geometric") and its colors,
    plus "Use my brand or moodboard" (they can paste a URL, brand book, screenshots, or adjectives). Make the three genuinely
    different: one restrained, one bold, one unexpected for the topic.
 4. **Format and motion.** HTML deck (default), PPTX (editable in PowerPoint), or both. Default motion level: Minimal, Smooth,

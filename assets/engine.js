@@ -37,6 +37,15 @@
   function fit() {
     scale = Math.min(innerWidth / W, innerHeight / H);
     stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    fxCanvases.forEach(sizeFx);
+  }
+  // Canvas fx draw in 1920x1080 units; the backing store follows the real pixel density (capped at 4K) so 1440p and 2160p stay sharp.
+  const fxCanvases = new Set();
+  function sizeFx(f) {
+    const k = Math.min(2, Math.max(1, scale * (devicePixelRatio || 1)));
+    if (f.k === k) return;
+    f.k = k; f.c.width = Math.round(W * k); f.c.height = Math.round(H * k);
+    f.ctx.setTransform(k, 0, 0, k, 0, 0);
   }
   addEventListener('resize', fit);
   fit();
@@ -354,9 +363,10 @@
     let f = fxCache.get(s);
     if (!f) {
       const c = document.createElement('canvas');
-      c.className = 'kx-fx'; c.width = W; c.height = H;
+      c.className = 'kx-fx';
       s.prepend(c);
-      f = { c, ctx: c.getContext('2d'), raf: 0, run: null, kind };
+      f = { c, ctx: c.getContext('2d'), raf: 0, run: null, kind, k: 0 };
+      sizeFx(f); fxCanvases.add(f);
       fxCache.set(s, f);
     }
     return f;

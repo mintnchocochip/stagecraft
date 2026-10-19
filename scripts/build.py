@@ -74,6 +74,8 @@ class DeckParser(HTMLParser):
             self.allow_fonts |= {f.strip().lower() for f in a.get("content", "").split(",") if f.strip()}
         if tag == "link" and "fonts.googleapis.com" in a.get("href", ""):
             self.fonts_css.extend(re.findall(r"family=([^&:]+)", a["href"].replace("+", " ")))
+        if tag == "link" and "api.fontshare.com" in a.get("href", ""):
+            self.fonts_css.extend(f.replace("-", " ") for f in re.findall(r"f\[\]=([\w-]+)", a["href"]))
         if tag == "section" and "slide" in cls:
             self.cur = {"id": a.get("id"), "layout": a.get("data-layout"), "claims": (a.get("data-claims") or "").split(),
                         "title_attr": a.get("data-title"), "text": [], "notes": [], "code": [], "headings": [],

@@ -64,11 +64,12 @@ On the slide `<section>`:
 ## Custom motion (bespoke components)
 
 When the vocabulary cannot express a component (a token stream, a queue filling, a state machine stepping), register a hook.
-It runs on slide entry with the current level and gsap (which may be null).
+Hooks are keyed by the slide's `id` (not a component name). It runs on slide entry with the current level and gsap (which may be null).
 
 ```html
 <script>
 window.KX_ENTER = window.KX_ENTER || {};
+// <section class="slide" id="retry-loop"> ... </section>
 window.KX_ENTER['retry-loop'] = (slide, level, gsap) => {
   const dots = slide.querySelectorAll('.attempt');
   if (level === 0 || !gsap) { dots.forEach(d => d.classList.add('done')); return; }   // final static state
@@ -78,6 +79,9 @@ window.KX_ENTER['retry-loop'] = (slide, level, gsap) => {
 };
 </script>
 ```
+
+Static screenshots, PDF and the audit render every `data-step` revealed at once, at level 0. A timer watchdog finishes
+any animation the browser did not get to run (background tabs), so content never stays hidden.
 
 Rules for hooks: level 0 must produce the final state (screenshots, PDF and the audit use it). Scale intensity with
 `level`. Return a timeline so the engine can finish it on navigation, or a cleanup function that stops loops. Put hooks in

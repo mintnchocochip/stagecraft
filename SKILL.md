@@ -39,8 +39,9 @@ Show the outline (numbered titles, one line each, layout, key visual) and get a 
 ## 4. Design system
 
 From the chosen direction in `references/design.md`, write the theme: `:root` tokens (`--bg --fg --muted --accent
---accent-ink --font-display --font-body --font-mono`), font links, and one signature device. Plan the layout sequence so
-neighbors differ and the deck uses many archetypes. Plan one or two bespoke components for the content
+--accent-ink --font-display --font-body --font-mono`), font links, and one signature device. Define the system once (title
+anchor, kicker, margins, footer, panel style, depth, accent moments) and reuse it on every slide; vary the composition of
+the visual half, not the system. Use the direction's own faces unless the user chose something more extreme. Plan one or two bespoke components for the content
 (`references/components.md` section 10). Read `references/motion.md` before tagging anything.
 
 ## 5. Write the deck source
@@ -76,7 +77,10 @@ at build. Skeleton:
 ```
 
 Authoring rules:
-- Design at 1920x1080 in px. Absolute positioning or CSS grid inside each slide. 96px outer margins unless `data-bleed`.
+- Design at 1920x1080 in px. Absolute positioning or CSS grid inside each slide. 96px outer margins unless `data-bleed`
+  (also use `data-bleed` on decorative glow or texture layers that extend past the edge).
+- Fill the frame: content on most slides reaches below y 760. Use `data-open` only on slides where emptiness is the point.
+- Decorative numerals (folios, step markers, section numbers) go in `data-deco` elements so the number check skips them.
 - Every slide has `id`, `data-layout`, `data-claims`, and `<aside class="notes">`.
 - Tag motion with the `data-anim` vocabulary. Hero move first, supporting copy delayed, five to eight animated elements max.
 - Interactivity where it explains something: clickable diagram nodes, tabs, hover rows, chart tooltips, step builds.
@@ -93,8 +97,10 @@ python <skill>/scripts/snapshot.py presentations/<slug>/deck.html
 - build.py lints and writes `deck.html` only with zero errors. Fix every error; fix warnings unless you have a reason.
 - snapshot.py runs a layout audit in headless Chrome or Edge (offstage, clipped, overlapping, tiny, low-contrast text) and
   saves `snapshots/contact.png` plus one PNG per slide. Open contact.png and look at it like an art director:
-  Does any slide look like a template? Is the hierarchy obvious from across a room? Do two neighbors feel the same?
-  Is anything cramped, orphaned, or floating? Fix, rebuild, re-snapshot. Two or three passes is normal.
+  Does every slide belong to one system? Is there a pop of accent color where it matters? Is any bottom third empty?
+  Is the hierarchy obvious from across a room? Is anything cramped, orphaned, or floating? Do special glyphs render?
+  Then read each slide's captions against its claims: the build checks numbers, not meaning.
+  Fix, rebuild, re-snapshot. Two or three passes is normal.
 - No Chrome or Edge: open `deck.html?audit` in a browser tool and read `window.__kxAudit`, then screenshot `deck.html?static&motion=0#N`.
 
 ## 7. Deliver
@@ -103,14 +109,16 @@ Tell the user, briefly:
 - Where the files are: `deck.html` (present this), `deck.src.html` (edit this, then rebuild), `brief.json` (sources and claims).
 - How to present: open in Chrome, `F` fullscreen, arrows or clicker to advance, `M` motion level, `N` notes with citations,
   `P` presenter window, `O` overview. `?motion=0` to `?motion=4` in the URL sets the level.
-- Offline venue: rebuild with `--offline` to inline GSAP. PDF: `snapshot.py deck.html --pdf`.
+- Offline venue: rebuild with `--offline` to inline GSAP. PDF: `snapshot.py deck.html --pdf` (vector, sharp at any size).
+  High-resolution PNGs: `snapshot.py deck.html --res 1440` (2K) or `--res 2160` (4K). The live deck is sharp on 2K and 4K
+  displays as is.
 - Any claims from model knowledge the build listed, so they can verify them.
 
 ## PPTX
 
-When the user wants PowerPoint, read `references/pptx.md`. Same brief.json and voice rules; build with `scripts/pptx_kit.py`
-(native, editable charts and diagrams, Morph transitions mapped from the motion level), or place snapshot PNGs for a
-pixel-perfect image deck. For both formats, do HTML first, then PPTX from the same outline.
+When the user wants PowerPoint, read `references/pptx.md`. Same brief.json and voice rules; build natively with
+`scripts/pptx_kit.py` (editable text, charts and diagrams, Morph transitions mapped from the motion level). Only use the
+image-per-slide route when the user explicitly prefers exact looks over editing. For both formats, do HTML first, then PPTX from the same outline.
 
 ## Editing an existing deck
 

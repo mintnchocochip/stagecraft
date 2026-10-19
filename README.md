@@ -9,6 +9,7 @@ A Claude skill that builds art-directed presentations from real material (a code
 - **Grounded content**: every fact goes into a claim ledger (`brief.json`) with a verbatim quote and a locator. The build fails if a slide shows a number that is not in the ledger, or if a quote is not found in its source file.
 - **Writing rules enforced by lint**: no dash characters, no emoji, no stock AI phrasing, no generic titles like "Overview".
 - **Native PPTX** too: editable charts, connected diagrams, speaker notes, and Morph transitions mapped from the motion level.
+- **Sharp on 2K and 4K**: type, SVG and CSS are vector; canvas effects render at native pixel density up to 3840x2160; `snapshot.py --res 2160` exports true 4K PNGs.
 - **Self-checks**: a headless Chrome audit flags offstage, clipped, overlapping, tiny and low-contrast text, then saves a contact sheet to review.
 
 Open `docs/example-deck.html` in Chrome to try one. Press `M` to change the motion level, `N` for notes, `O` for overview, `P` for presenter view, `F` for fullscreen.
@@ -37,7 +38,7 @@ presentations/<slug>/
   snapshots/        audit screenshots and contact.png
 ```
 
-Rebuild after edits with `python scripts/build.py presentations/<slug>/deck.src.html`. Add `--offline` to inline GSAP for venues without wifi. `python scripts/snapshot.py deck.html --pdf` exports a PDF.
+Rebuild after edits with `python scripts/build.py presentations/<slug>/deck.src.html`. Add `--offline` to inline GSAP for venues without wifi. `python scripts/snapshot.py deck.html --pdf` exports a PDF; `--res 1440` or `--res 2160` saves 2K or 4K slide PNGs.
 
 ## Layout
 

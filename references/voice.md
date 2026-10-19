@@ -18,6 +18,7 @@ the material, talking to this audience. The build enforces the hard rules; the r
 - No "it's not X, it's Y", "not just X but Y", "more than just". Say what it is.
 - No triads for rhythm ("fast, simple, and powerful"). If there are really three things, list them plainly.
 - Concrete over abstract. Name the file, the number, the person, the step.
+- Keep the source's hedges. "~20%" or "an estimated 20%" becomes "about 20%" or "est. 20%", never a bare "20%".
 
 ## Vocabulary matched to the room
 

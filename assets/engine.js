@@ -605,6 +605,28 @@
   });
   slides.forEach(s => clearFocus(s));
 
+  // Node boxes from the g's transform and its rect, so this works before layout and on hidden slides.
+  function nodeBox(svg, id) {
+    const g = svg.querySelector(`[data-node="${CSS.escape(id)}"]`), r = g?.querySelector('rect');
+    if (!r) return null;
+    const m = g.transform.baseVal.consolidate()?.matrix, x = (m?.e || 0) + (+r.getAttribute('x') || 0), y = (m?.f || 0) + (+r.getAttribute('y') || 0);
+    const w = +r.getAttribute('width'), h = +r.getAttribute('height');
+    return { x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
+  }
+  // An edge with no d is routed box to box, so agents never hand-place endpoints.
+  document.querySelectorAll('svg path[data-edge]:not([d])').forEach(p => {
+    const [a, b] = p.dataset.edge.split(/\s+/).map(id => nodeBox(p.ownerSVGElement, id));
+    if (!a || !b) return;
+    const dx = b.cx - a.cx, dy = b.cy - a.cy;
+    if (Math.abs(dx) * a.h >= Math.abs(dy) * a.w) {
+      const sx = dx > 0 ? a.x + a.w : a.x, ex = dx > 0 ? b.x : b.x + b.w, mx = (sx + ex) / 2;
+      p.setAttribute('d', `M${sx} ${a.cy} C ${mx} ${a.cy}, ${mx} ${b.cy}, ${ex} ${b.cy}`);
+    } else {
+      const sy = dy > 0 ? a.y + a.h : a.y, ey = dy > 0 ? b.y : b.y + b.h, my = (sy + ey) / 2;
+      p.setAttribute('d', `M${a.cx} ${sy} C ${a.cx} ${my}, ${b.cx} ${my}, ${b.cx} ${ey}`);
+    }
+  });
+
   const tip = document.createElement('div'); tip.className = 'kx-tip'; stage.appendChild(tip);
   stage.addEventListener('pointerover', e => { const t = e.target.closest('[data-tip]'); if (t) { tip.textContent = t.dataset.tip; tip.classList.add('is-on'); } });
   stage.addEventListener('pointerout', e => { if (e.target.closest('[data-tip]')) tip.classList.remove('is-on'); });
@@ -742,8 +764,9 @@
         issues.push({ type: 'clipped', el: desc(el) }); el.classList.add('kx-bad');
       }
       if (!hasText) continue;
-      const fs = parseFloat(cs.fontSize);
-      if (fs < 18) issues.push({ type: 'tiny-text', el: desc(el), px: fs });
+      // SVG font-size is in viewBox units; the screen CTM gives the size as rendered on the 1920 stage.
+      const fs = parseFloat(cs.fontSize) * (el.ownerSVGElement ? (el.getScreenCTM()?.a || scale) / scale : 1);
+      if (fs < 18) issues.push({ type: 'tiny-text', el: desc(el), px: Math.round(fs * 10) / 10 });
       const fg = rgba(cs.color), bg = bgOf(el);
       if (fg && bg && (fg[3] === undefined || fg[3] > 0.5)) {
         const a = lum(fg.slice(0, 3)), b = lum(bg), ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
@@ -760,6 +783,13 @@
       if (w > 0 && h > 0 && w * h > 0.15 * Math.min(A.r.width * A.r.height, B.r.width * B.r.height)) {
         issues.push({ type: 'overlap', el: desc(A.el), with: desc(B.el) }); A.el.classList.add('kx-bad'); B.el.classList.add('kx-bad');
       }
+    }
+    for (const p of s.querySelectorAll('svg path[data-edge]')) {
+      const boxes = p.dataset.edge.split(/\s+/).map(id => nodeBox(p.ownerSVGElement, id)).filter(Boolean);
+      if (boxes.length < 2 || !p.getTotalLength) continue;
+      const near = pt => boxes.some(b => Math.max(b.x - pt.x, 0, pt.x - b.x - b.w) ** 2 + Math.max(b.y - pt.y, 0, pt.y - b.y - b.h) ** 2 <= 16 ** 2);
+      if (!near(p.getPointAtLength(0)) || !near(p.getPointAtLength(p.getTotalLength())))
+        issues.push({ type: 'loose-edge', el: `edge "${p.dataset.edge}"`, fix: 'an end does not touch its node; delete the d attribute and the engine routes it' });
     }
     const OPEN = /statement|poster|quote|giant|cover|section/;
     if (!OPEN.test(s.dataset.layout || '') && !s.hasAttribute('data-open')) {

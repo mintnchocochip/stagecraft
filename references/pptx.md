@@ -44,8 +44,9 @@ Rules:
   `!!` (for example `name="!!title"`); PowerPoint then animates them between slides. Move, resize, or recolor them across
   slides for the effect.
 - Speaker notes: write them once in brief.json `slides[].notes` and use them for both HTML `<aside class="notes">` and `d.notes()`.
-- Font metrics differ from the HTML faces. After the first build, render the PPTX to images (below) and shrink any text that
-  overflows its box; Georgia and other fallback serifs run wider than most display faces. `d.node()` shrinks long labels to fit.
+- Font metrics differ from the HTML faces. `d.text()` shrinks the size until the text is estimated to fit its box
+  (`fit=False` turns that off), using per-face widths for the Office fonts above. Give each text box its real height.
+  Still render the PPTX to images (below) and check it; the estimate is close, not exact.
 - `d.save()` refuses to write if any text has dash characters or emoji. Also run the HTML lint ideas by eye: numbers from
   the ledger only, no generic titles.
 

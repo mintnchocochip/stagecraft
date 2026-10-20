@@ -10,6 +10,7 @@ Coordinates are pixels on the same 1920x1080 canvas the HTML decks use. Import i
     d.text(s, 96, 120, 1100, 300, "Title", font="display", size=120)
     d.save("deck.pptx")                  # refuses to save if any text has dash characters or emoji
 """
+import math
 import re
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
@@ -46,6 +47,23 @@ def rgb(hexstr):
     return RGBColor.from_string(hexstr.lstrip("#").upper())
 
 
+# Average advance per character in em, measured roughly on mixed-case English. Unknown faces use 0.55.
+ADVANCE = {"georgia": 0.53, "cambria": 0.5, "sitka": 0.52, "rockwell": 0.53, "segoe ui": 0.5, "calibri": 0.47,
+           "bahnschrift": 0.47, "gill sans mt": 0.46, "consolas": 0.55, "cascadia mono": 0.6, "avenir": 0.52,
+           "helvetica neue": 0.52, "arial narrow": 0.42}
+
+
+def fit_size(paras, w, h, size, line, face, upper=False):
+    adv = ADVANCE.get(face.lower(), 0.55) * (1.12 if upper else 1)
+    while size > 12:
+        cpl = max(1, int(w / (adv * size)))
+        lines = sum(max(1, math.ceil(len(p) / cpl)) for p in paras)
+        if lines * size * line * 1.18 <= h and max(len(wd) for p in paras for wd in (p.split() or [""])) <= cpl:
+            break
+        size = round(size * 0.95, 1)
+    return size
+
+
 class Deck:
     def __init__(self, theme):
         self.t = theme
@@ -65,15 +83,19 @@ class Deck:
         return s
 
     def text(self, s, x, y, w, h, txt, font="body", size=28, color=None, bold=False, italic=False,
-             align="left", valign="top", line=1.15, tracking=0, name=None, upper=False):
-        """txt may be a string or a list of strings (one paragraph each). Returns the shape."""
+             align="left", valign="top", line=1.15, tracking=0, name=None, upper=False, fit=True):
+        """txt may be a string or a list of strings (one paragraph each). Returns the shape.
+        fit shrinks size until the text is estimated to fit w x h, since Office fallback faces run wider than the HTML ones."""
+        paras = [txt] if isinstance(txt, str) else txt
+        if fit:
+            size = fit_size(paras, w, h, size, line, self.font(font), upper)
         tb = s.shapes.add_textbox(px(x), px(y), px(w), px(h))
         if name: tb.name = name
         tf = tb.text_frame
         tf.word_wrap = True
         tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
         tf.vertical_anchor = {"top": MSO_ANCHOR.TOP, "middle": MSO_ANCHOR.MIDDLE, "bottom": MSO_ANCHOR.BOTTOM}[valign]
-        for i, para in enumerate([txt] if isinstance(txt, str) else txt):
+        for i, para in enumerate(paras):
             p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
             p.alignment = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT}[align]
             p.line_spacing = line

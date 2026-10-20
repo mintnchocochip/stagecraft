@@ -76,7 +76,9 @@ Field rules:
 - The build also warns when a slide shows a number that is in the ledger but not in the claims that slide cites. Cite the right claim.
 - Decorative numerals (folios, step markers like 1 2 3, section numbers) go in elements marked `data-deco`, or the
   number check will reject them. Text inside `<code>` and `<pre>` is exempt from the dash and number checks because it
-  must stay verbatim.
+  must stay verbatim. Numbers right after a citation word (Table 5.3, Section 2.6, Chapter 6, Fig. 2, p. 14) are exempt too.
+- A quote that fails the check gets an error showing where it stops matching. Quotes may wrap across commented source
+  lines; the comment markers (`#`, `//`, `*`) are ignored when matching.
 - Derived numbers (a percentage you computed from two sourced numbers) get their own claim with `"source"` of the inputs'
   source and the arithmetic in `locator`, for example `"locator": "C3 / C4"`.
 - `slides[]` is the outline. `role`: cover, point, mechanism, evidence, explain, compare, story, section, close. Every slide

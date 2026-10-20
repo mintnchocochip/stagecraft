@@ -163,6 +163,14 @@ def ws(s):
     return re.sub(r"\s+", " ", s).strip()
 
 
+def unmark(s):
+    """Drop comment markers so a quote that wraps across commented source lines still matches."""
+    return re.sub(r"(?:^|\s)(?:#+|//+|\*|--)(?=\s)", "", s)
+
+
+CITATION = re.compile(r"(?:table|tab\.|section|sec\.|chapter|ch\.|figure|fig\.|page|p\.|pp\.|slide|appendix|eq\.|equation|ref\.|§)\s*$", re.I)
+
+
 def lint(src_html, brief, brief_dir):
     errors, warnings, verify = [], [], []
     p = DeckParser()
@@ -205,8 +213,12 @@ def lint(src_html, brief, brief_dir):
             body = source_text(brief_dir / ref, cache)
             if body is None:
                 unverified.add(f"{s['id']} ({ref})")
-            elif ws(q) not in body:
-                errors.append(f"ledger: claim {c['id']} quote not found verbatim in {ref}")
+            elif ws(q) not in body and unmark(ws(q)) not in unmark(body):
+                words, k = ws(q).split(" "), 0
+                while k < len(words) and unmark(" ".join(words[:k + 1])) in unmark(body):
+                    k += 1
+                hint = f"; it matches up to \"{' '.join(words[:k])}\" and diverges at \"{' '.join(words[k:k + 6])}\"" if k else "; not even its first word matches, check the ref path"
+                errors.append(f"ledger: claim {c['id']} quote not found verbatim in {ref}{hint}")
         for u in sorted(unverified):
             warnings.append(f"ledger: quotes from source {u} were not verified (file missing or unreadable format). Use a path relative to brief.json or absolute, or extract the text to a .txt source")
     else:
@@ -237,8 +249,11 @@ def lint(src_html, brief, brief_dir):
 
         if brief:
             own = set().union(*(claim_nums.get(cid, set()) for cid in s["claims"])) if s["claims"] else None
-            for n in NUMBER.findall(visible + " " + notes):
-                k = norm_num(n)
+            text = visible + " " + notes
+            for m in NUMBER.finditer(text):
+                n, k = m.group(), norm_num(m.group())
+                if CITATION.search(text[max(0, m.start() - 14):m.start()]):
+                    continue
                 if k not in ledger_nums:
                     errors.append(f"{tag}: number '{n}' is not in any claim in brief.json. Add a sourced claim, or mark decorative numerals (folios, step markers) with data-deco")
                 elif own is not None and k not in own:

@@ -22,7 +22,7 @@ unrelated nodes, lights its edges, and shows the matching `[data-detail]` panel.
 
 ```html
 <svg class="arch" viewBox="0 0 1200 640" data-anim="draw">
-  <path class="edge" data-flow data-edge="api queue" d="M300 160 C 420 160, 420 320, 540 320"/>
+  <path class="edge" data-flow data-edge="api queue"/>
   <g class="node" data-node="api" data-links="queue" transform="translate(40 100)">
     <rect width="260" height="120"/><text x="24" y="54">gateway</text><text class="sub" x="24" y="90">auth, rate limit</text>
   </g>
@@ -34,7 +34,10 @@ unrelated nodes, lights its edges, and shows the matching `[data-detail]` panel.
 </div>
 ```
 
-- Lay nodes on a grid (multiples of 20). Route edges as cubic curves or orthogonal elbows, never crossing a node.
+- Leave `d` off edge paths. The engine routes each edge from the facing side of one node's `rect` to the other's, so ends
+  always touch. Write `d` by hand only for a custom route; the audit flags `loose-edge` when its ends miss the nodes.
+- Lay nodes on a grid (multiples of 20), each as a `g` with `transform="translate(x y)"` around one `rect`. Place them so
+  no straight path between linked nodes crosses a third node.
 - `data-flow` gives marching dashes at level 2 and moving packets at level 3+. `data-reverse` flips direction, `data-packets="3"` and `data-speed="1.5"` tune it.
 - Mark the component the talk is about with a filled node (`.hot`). One per diagram.
 - Style hooks: `.node.is-focus`, `.is-dim`, `[data-edge].is-lit` (engine sets the stroke to `--accent`).

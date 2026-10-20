@@ -95,7 +95,7 @@ python <skill>/scripts/snapshot.py presentations/<slug>/deck.html
 ```
 
 - build.py lints and writes `deck.html` only with zero errors. Fix every error; fix warnings unless you have a reason.
-- snapshot.py runs a layout audit in headless Chrome or Edge (offstage, clipped, overlapping, tiny, low-contrast text) and
+- snapshot.py runs a layout audit in headless Chrome or Edge (offstage, clipped, overlapping, tiny, low-contrast text, empty bottom, diagram edges that miss their nodes) and
   saves `snapshots/contact.png` plus one PNG per slide. Open contact.png and look at it like an art director:
   Does every slide belong to one system? Is there a pop of accent color where it matters? Is any bottom third empty?
   Is the hierarchy obvious from across a room? Is anything cramped, orphaned, or floating? Do special glyphs render?

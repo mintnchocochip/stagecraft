@@ -106,19 +106,19 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
 .s-gate [data-pane] li { font-size: 30px; line-height: 1.35; padding: 10px 0; break-inside: avoid; }
 </style>
 </head>
-<body data-motion="3">
+<body data-motion="3" data-cut="scan">
 <div class="kx-viewport"><div class="kx-stage">
 
 <section class="slide s-cover" id="cover" data-layout="poster" data-fx="dotgrid" data-claims="C2" data-title="One file. Five speeds.">
   <div class="cover-meta" data-anim="stagger"><span>stagecraft</span><span>Engine walkthrough</span><span>Example deck</span></div>
-  <h1 class="cover-title" data-anim="chars"><span>One file.</span><em>Five speeds.</em></h1>
+  <h1 class="cover-title" data-move='{"yPercent":100,"split":"chars","stagger":0.035,"ease":"steps(4)","dur":0.5}'><span>One file.</span><em>Five speeds.</em></h1>
   <p class="cover-dek" data-anim="lines" data-delay="0.9">A whole deck lives in one HTML file. A motion selector plays it from Still to Insane.</p>
   <div class="cover-keys" data-anim="fade" data-delay="1.2"><b>M</b> motion · <b>N</b> notes · <b>O</b> overview · <b>P</b> presenter</div>
   <aside class="notes"><p>Open with the promise. One file, no build step at the venue. Press M to show the motion selector live.</p></aside>
 </section>
 
-<section class="slide s-stage" id="stage" data-layout="giant-number" data-fx="grain" data-claims="C1 C3" data-transition="wipe">
-  <div class="giant" data-bleed data-depth="0.5" data-anim="mask" data-from="left"><span>1920</span><span class="x">by</span><span>1080</span></div>
+<section class="slide s-stage" id="stage" data-layout="giant-number" data-fx="grain" data-claims="C1 C3">
+  <div class="giant" data-bleed data-depth="0.5" data-move='{"scale":0.4,"transformOrigin":"0% 50%","ease":"power4.inOut","dur":1.3,"opacity":1}'><span>1920</span><span class="x">by</span><span>1080</span></div>
   <div class="rail">
     <p class="kicker" data-anim="fade">The stage</p>
     <h2 data-anim="lines">Every slide is drawn once and scaled whole.</h2>
@@ -169,8 +169,8 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
   <div class="chart">
     <div class="row"><span class="lab">Fade</span><div class="track"><div class="fill" style="--v:0.45" data-anim="grow" data-axis="x" data-tip="Fade, level 1"></div></div><span class="val">0.45</span></div>
     <div class="row"><span class="lab">Slide</span><div class="track"><div class="fill" style="--v:0.85" data-anim="grow" data-axis="x" data-tip="Slide, level 2"></div></div><span class="val">0.85</span></div>
-    <div class="row"><span class="lab">Wipe</span><div class="track"><div class="fill" style="--v:1.0" data-anim="grow" data-axis="x" data-tip="Wipe, level 3 default"></div></div><span class="val">1.0</span></div>
-    <div class="row"><span class="lab">Zoom</span><div class="track"><div class="fill" style="--v:1.1" data-anim="grow" data-axis="x" data-tip="Zoom, level 4 rotation"></div></div><span class="val">1.1</span></div>
+    <div class="row"><span class="lab">Wipe</span><div class="track"><div class="fill" style="--v:1.0" data-anim="grow" data-axis="x" data-tip="Wipe, level 3"></div></div><span class="val">1.0</span></div>
+    <div class="row"><span class="lab">Zoom</span><div class="track"><div class="fill" style="--v:1.1" data-anim="grow" data-axis="x" data-tip="Zoom, level 3"></div></div><span class="val">1.1</span></div>
     <div class="row peak"><span class="lab">Iris</span><div class="track"><div class="fill" style="--v:1.15" data-anim="grow" data-axis="x" data-tip="Iris opens from the cursor"></div></div><span class="val">1.15</span></div>
   </div>
   <div class="margin" data-anim="fade" data-delay="0.8"><p>Iris opens from wherever the cursor rests. Point at the thing you want them to see next.</p><p class="mono">Hover a bar for its level</p></div>
@@ -190,5 +190,15 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
 </section>
 
 </div></div>
+<script>
+// Motion concept: a print run. Pages are set in type, scaled to the frame, then scanned onto the stage line by line.
+window.KX_CUT = window.KX_CUT || {};
+window.KX_CUT.scan = ({ from, to, dir, level, gsap, tl }) => {
+  tl.fromTo(to, { clipPath: dir > 0 ? 'inset(0% 0% 100% 0%)' : 'inset(100% 0% 0% 0%)' },
+    { clipPath: 'inset(0% 0% 0% 0%)', duration: level >= 3 ? 0.8 : 0.5, ease: 'steps(' + (level >= 3 ? 10 : 6) + ')' })
+    .to(from, { opacity: 0.25, duration: 0.5, ease: 'power1.in' }, 0);
+  return 0.6;
+};
+</script>
 </body>
 </html>

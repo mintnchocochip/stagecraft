@@ -82,7 +82,7 @@ class DeckParser(HTMLParser):
                         "anims": 0, "has_notes": False, "line": self.getpos()[0]}
             self.slides.append(self.cur)
         if self.cur is not None:
-            if "data-anim" in a: self.cur["anims"] += 1
+            if "data-anim" in a or "data-move" in a: self.cur["anims"] += 1
             if "notes" in cls: self.cur["has_notes"] = True
             for k in TEXT_ATTRS:
                 if a.get(k) and not self._skip():
@@ -165,7 +165,7 @@ def ws(s):
 
 def unmark(s):
     """Drop comment markers so a quote that wraps across commented source lines still matches."""
-    return re.sub(r"(?:^|\s)(?:#+|//+|\*|--)(?=\s)", "", s)
+    return re.sub(r"(?:^|\s)(?:#+:?|//+|\*|--)(?=\s)", "", s)
 
 
 CITATION = re.compile(r"(?:table|tab\.|section|sec\.|chapter|ch\.|figure|fig\.|page|p\.|pp\.|slide|appendix|eq\.|equation|ref\.|§)\s*$", re.I)
@@ -289,6 +289,17 @@ def lint(src_html, brief, brief_dir):
     n = len(p.slides)
     if n >= 6 and len(set(layouts)) < min(4, n // 3 + 1):
         warnings.append(f"deck: only {len(set(layouts))} distinct layouts across {n} slides")
+
+    m = re.search(r'<body[^>]*\bdata-motion="(\d)"', src_html)
+    level = int(m.group(1)) if m else 2
+    authored = sum(src_html.count(k) for k in ("KX_CUT", "KX_ENTER", "data-move=", "data-keep="))
+    if level >= 2 and not (brief or {}).get("motion", {}).get("concept"):
+        warnings.append('deck: brief.json has no "motion" concept. Design the motion for this subject (references/motion.md)')
+    if level >= 3 and authored < 3:
+        errors.append("deck: motion is engine presets only. At Cinematic and Insane, author this deck's own cut and hero moves "
+                      "(KX_CUT, data-move, data-keep, KX_ENTER) from its motion concept (references/motion.md)")
+    elif level == 2 and not authored:
+        warnings.append("deck: motion is engine presets only. Give the hero slides authored moves (data-move, data-keep)")
     return p, errors, warnings, verify
 
 

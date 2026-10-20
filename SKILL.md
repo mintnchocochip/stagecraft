@@ -22,7 +22,7 @@ Read `references/content.md` now if the sources are large or mixed.
 ## 2. Aesthetic interview
 
 Read `references/interview.md` and run it: core concept, audience and setting, moodboard direction (three options from
-`references/design.md`, tailored), format and default motion level. One round, using AskUserQuestion when available.
+`references/design.md`, tailored), format and default motion level. When the user's own words name an intensity, use it as the default level without asking: "insane", "wild", "go crazy" = Insane (4); "cinematic", "dramatic" = Cinematic (3); "subtle", "clean" = Smooth (2); "no animation", "print" = Still (0). One round, using AskUserQuestion when available.
 Skip what the user already answered. If they said to just build it, state your assumptions in a short paragraph and continue.
 
 ## 3. Claim ledger and outline
@@ -42,7 +42,12 @@ From the chosen direction in `references/design.md`, write the theme: `:root` to
 --accent-ink --font-display --font-body --font-mono`), font links, and one signature device. Define the system once (title
 anchor, kicker, margins, footer, panel style, depth, accent moments) and reuse it on every slide; vary the composition of
 the visual half, not the system. Use the direction's own faces unless the user chose something more extreme. Plan one or two bespoke components for the content
-(`references/components.md` section 10). Read `references/motion.md` before tagging anything.
+(`references/components.md` section 10).
+
+Then design the motion the same way, from this subject. Read `references/motion.md` and write the `motion` block in
+brief.json: a concept taken from the material (what moves in this world, with what physics), an ease family and tempo,
+the deck's own cut, two or three signature moves for the key slides, and what stays still. Do not reuse a previous deck's
+motion. At Cinematic and Insane the build fails if the deck only uses engine presets.
 
 ## 5. Write the deck source
 
@@ -82,10 +87,11 @@ Authoring rules:
 - Fill the frame: content on most slides reaches below y 760. Use `data-open` only on slides where emptiness is the point.
 - Decorative numerals (folios, step markers, section numbers) go in `data-deco` elements so the number check skips them.
 - Every slide has `id`, `data-layout`, `data-claims`, and `<aside class="notes">`.
-- Tag motion with the `data-anim` vocabulary. Hero move first, supporting copy delayed, five to eight animated elements max.
+- Motion: the hero element on each slide gets an authored move from the concept (`data-move`, `data-keep`, a `KX_CUT`
+  cut, or a `KX_ENTER` hook). Presets (`data-anim`) are for supporting copy. Adjacent slides never share a hero move.
 - Interactivity where it explains something: clickable diagram nodes, tabs, hover rows, chart tooltips, step builds.
 - Voice per `references/voice.md`: no dash characters at all, short declarative sentences, register matched to the audience, assertion titles.
-- Look at `assets/example/deck.src.html` once for wiring patterns. Do not copy its look, palette, or fonts.
+- Look at `assets/example/deck.src.html` once for wiring patterns. Do not copy its look, palette, fonts, or motion.
 
 ## 6. Build, look, fix
 

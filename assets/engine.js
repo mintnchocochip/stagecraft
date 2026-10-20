@@ -91,6 +91,23 @@
   // Each preset returns a tween/timeline that animates FROM a hidden state TO the element's natural state,
   // so completing it (progress(1)) always leaves the authored layout untouched.
   const P = {
+    // Author-designed move: data-move='{"y":140,"rotate":-6,"split":"words","stagger":0.04,"ease":"back.out(1.6)","dur":1.1}'.
+    // Distances are authored for Insane and scaled down per level, so one design serves every level.
+    move(el, L) {
+      let o = {};
+      try { o = JSON.parse(el.dataset.move || '{}'); } catch { console.error('[stagecraft] bad data-move JSON', el); }
+      if (L < 2) return P.fade(el, L);
+      const k = [0, 0, 0.5, 0.8, 1][L];
+      const { split: sp, stagger = 0.05, ease = 'expo.out', dur = 1, ...v } = o;
+      for (const q of ['x', 'y', 'xPercent', 'yPercent', 'rotate', 'rotateX', 'rotateY', 'skewX', 'skewY']) if (typeof v[q] === 'number') v[q] *= k;
+      for (const q of ['scale', 'scaleX', 'scaleY']) if (typeof v[q] === 'number') v[q] = 1 + (v[q] - 1) * k;
+      if (v.opacity === undefined) v.opacity = 0;
+      if (v.filter) v.clearProps = 'filter';
+      let t = el;
+      if (sp === 'children') t = kids(el);
+      else if (sp) { const r = split(el, sp === 'lines' ? 'lines' : 'lines,' + sp); t = r ? r[sp] : el; }
+      return G.from(t, { ...v, duration: dur, ease, stagger });
+    },
     fade(el, L) {
       const v = [null,
         { opacity: 0, duration: 0.5, ease: 'power2.out' },
@@ -193,7 +210,7 @@
   };
 
   function animFor(el, L) {
-    const type = el.dataset.anim || 'fade';
+    const type = el.dataset.anim || (el.dataset.move ? 'move' : 'fade');
     if (type === 'none' || L < 1) return null;
     if (L < (+el.dataset.min || 0)) return null;
     const fn = P[type] || P.fade;
@@ -208,7 +225,7 @@
   }
 
   function animated(s, filter) {
-    return [...s.querySelectorAll('[data-anim]')].filter(e => !e.closest('.notes') && filter(e));
+    return [...s.querySelectorAll('[data-anim],[data-move]')].filter(e => !e.closest('.notes,.kx-kept') && filter(e));
   }
   const stepOf = e => +(e.closest('[data-step]')?.dataset.step || 0);
 
@@ -281,10 +298,14 @@
   }
 
   // ---------- transitions ----------
-  const AUTO4 = ['shutter', 'iris', 'wipe', 'zoom'];
+  // The deck chooses its cuts (slide data-transition, then body data-cut). The engine never rotates through a set,
+  // because a fixed rotation made every deck move the same way. Custom cuts (window.KX_CUT) run from level 2.
+  const BUILTIN_CUTS = ['fade', 'slide', 'wipe', 'iris', 'zoom', 'shutter'];
   function pickTransition(to, i, L) {
-    if (L >= 3) return to.dataset.transition || (L === 4 ? AUTO4[i % AUTO4.length] : 'wipe');
-    return L === 2 ? 'slide' : 'fade';
+    const t = to.dataset.transition || document.body.dataset.cut;
+    if (t && (window.KX_CUT || {})[t] && L >= 2) return t;
+    if (t && BUILTIN_CUTS.includes(t) && (L >= 3 || t === 'fade' || t === 'slide')) return t;
+    return L >= 2 ? 'slide' : 'fade';
   }
   const SLIDE_PROPS = 'opacity,transform,clipPath,filter,zIndex,visibility';
 
@@ -297,10 +318,13 @@
       done(0); return;
     }
     from.classList.add('is-leaving');
-    const type = pickTransition(to, i, L);
+    // Shared elements: [data-keep="id"] on both slides travels from its old box to its new one (magic move).
+    const kept = [...to.querySelectorAll('[data-keep]')].map(b => [from.querySelector(`[data-keep="${CSS.escape(b.dataset.keep)}"]`), b]).filter(([a]) => a);
+    const type = kept.length && !to.dataset.transition ? 'fade' : pickTransition(to, i, L);
     const layers = to.querySelectorAll('[data-depth]');
     const tl = G.timeline({
       onComplete() {
+        kept.forEach(([a, b]) => { G.set(a, { clearProps: 'opacity' }); b.classList.remove('kx-kept'); });
         from.classList.remove('is-active', 'is-leaving');
         G.set([from, to], { clearProps: SLIDE_PROPS });
         if (layers.length) G.set(layers, { clearProps: 'transform' });
@@ -309,7 +333,19 @@
     });
     G.set(to, { zIndex: 2 }); G.set(from, { zIndex: 1 });
     let overlap = 0.3;
-    switch (type) {
+    kept.forEach(([a, b]) => {
+      const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      if (!rb.width || !rb.height) return;
+      b.classList.add('kx-kept');
+      G.set(a, { opacity: 0 });
+      tl.from(b, { x: (ra.left - rb.left) / scale, y: (ra.top - rb.top) / scale, scaleX: ra.width / rb.width, scaleY: ra.height / rb.height,
+        transformOrigin: '0 0', duration: [0, 0.5, 0.8, 1.0, 1.15][L], ease: 'expo.inOut', clearProps: 'transform' }, 0);
+    });
+    const custom = (window.KX_CUT || {})[type];
+    if (custom) {
+      try { const r = custom({ from, to, dir, level: L, gsap: G, tl }); overlap = typeof r === 'number' ? r : 0.4; }
+      catch (e) { console.error('[stagecraft] KX_CUT failed: ' + type, e); tl.fromTo(to, { opacity: 0 }, { opacity: 1, duration: 0.45 }); }
+    } else switch (type) {
       case 'fade':
         tl.fromTo(to, { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'power2.out' }).to(from, { opacity: 0, duration: 0.45 }, 0);
         overlap = 0.15; break;
@@ -794,7 +830,7 @@
     const OPEN = /statement|poster|quote|giant|cover|section/;
     if (!OPEN.test(s.dataset.layout || '') && !s.hasAttribute('data-open')) {
       let bottom = 0;
-      for (const el of s.querySelectorAll('h1,h2,h3,p,li,svg,img,video,canvas:not(.kx-fx),table,pre,figure,[data-node],[data-anim]')) {
+      for (const el of s.querySelectorAll('h1,h2,h3,p,li,svg,img,video,canvas:not(.kx-fx),table,pre,figure,[data-node],[data-anim],[data-move]')) {
         if (el.closest('.notes,[data-deco],.kx-fx,[hidden]')) continue;
         const r = el.getBoundingClientRect(); if (!r.height) continue;
         bottom = Math.max(bottom, (r.bottom - sr.top) / scale);

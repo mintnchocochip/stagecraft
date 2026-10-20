@@ -201,19 +201,19 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
 .s-gate [data-pane] li { font-size: 30px; line-height: 1.35; padding: 10px 0; break-inside: avoid; }
 </style>
 </head>
-<body data-motion="3">
+<body data-motion="3" data-cut="scan">
 <div class="kx-viewport"><div class="kx-stage">
 
 <section class="slide s-cover" id="cover" data-layout="poster" data-fx="dotgrid" data-claims="C2" data-title="One file. Five speeds.">
   <div class="cover-meta" data-anim="stagger"><span>stagecraft</span><span>Engine walkthrough</span><span>Example deck</span></div>
-  <h1 class="cover-title" data-anim="chars"><span>One file.</span><em>Five speeds.</em></h1>
+  <h1 class="cover-title" data-move='{"yPercent":100,"split":"chars","stagger":0.035,"ease":"steps(4)","dur":0.5}'><span>One file.</span><em>Five speeds.</em></h1>
   <p class="cover-dek" data-anim="lines" data-delay="0.9">A whole deck lives in one HTML file. A motion selector plays it from Still to Insane.</p>
   <div class="cover-keys" data-anim="fade" data-delay="1.2"><b>M</b> motion · <b>N</b> notes · <b>O</b> overview · <b>P</b> presenter</div>
   <aside class="notes"><p>Open with the promise. One file, no build step at the venue. Press M to show the motion selector live.</p></aside>
 </section>
 
-<section class="slide s-stage" id="stage" data-layout="giant-number" data-fx="grain" data-claims="C1 C3" data-transition="wipe">
-  <div class="giant" data-bleed data-depth="0.5" data-anim="mask" data-from="left"><span>1920</span><span class="x">by</span><span>1080</span></div>
+<section class="slide s-stage" id="stage" data-layout="giant-number" data-fx="grain" data-claims="C1 C3">
+  <div class="giant" data-bleed data-depth="0.5" data-move='{"scale":0.4,"transformOrigin":"0% 50%","ease":"power4.inOut","dur":1.3,"opacity":1}'><span>1920</span><span class="x">by</span><span>1080</span></div>
   <div class="rail">
     <p class="kicker" data-anim="fade">The stage</p>
     <h2 data-anim="lines">Every slide is drawn once and scaled whole.</h2>
@@ -264,8 +264,8 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
   <div class="chart">
     <div class="row"><span class="lab">Fade</span><div class="track"><div class="fill" style="--v:0.45" data-anim="grow" data-axis="x" data-tip="Fade, level 1"></div></div><span class="val">0.45</span></div>
     <div class="row"><span class="lab">Slide</span><div class="track"><div class="fill" style="--v:0.85" data-anim="grow" data-axis="x" data-tip="Slide, level 2"></div></div><span class="val">0.85</span></div>
-    <div class="row"><span class="lab">Wipe</span><div class="track"><div class="fill" style="--v:1.0" data-anim="grow" data-axis="x" data-tip="Wipe, level 3 default"></div></div><span class="val">1.0</span></div>
-    <div class="row"><span class="lab">Zoom</span><div class="track"><div class="fill" style="--v:1.1" data-anim="grow" data-axis="x" data-tip="Zoom, level 4 rotation"></div></div><span class="val">1.1</span></div>
+    <div class="row"><span class="lab">Wipe</span><div class="track"><div class="fill" style="--v:1.0" data-anim="grow" data-axis="x" data-tip="Wipe, level 3"></div></div><span class="val">1.0</span></div>
+    <div class="row"><span class="lab">Zoom</span><div class="track"><div class="fill" style="--v:1.1" data-anim="grow" data-axis="x" data-tip="Zoom, level 3"></div></div><span class="val">1.1</span></div>
     <div class="row peak"><span class="lab">Iris</span><div class="track"><div class="fill" style="--v:1.15" data-anim="grow" data-axis="x" data-tip="Iris opens from the cursor"></div></div><span class="val">1.15</span></div>
   </div>
   <div class="margin" data-anim="fade" data-delay="0.8"><p>Iris opens from wherever the cursor rests. Point at the thing you want them to see next.</p><p class="mono">Hover a bar for its level</p></div>
@@ -285,6 +285,16 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
 </section>
 
 </div></div>
+<script>
+// Motion concept: a print run. Pages are set in type, scaled to the frame, then scanned onto the stage line by line.
+window.KX_CUT = window.KX_CUT || {};
+window.KX_CUT.scan = ({ from, to, dir, level, gsap, tl }) => {
+  tl.fromTo(to, { clipPath: dir > 0 ? 'inset(0% 0% 100% 0%)' : 'inset(100% 0% 0% 0%)' },
+    { clipPath: 'inset(0% 0% 0% 0%)', duration: level >= 3 ? 0.8 : 0.5, ease: 'steps(' + (level >= 3 ? 10 : 6) + ')' })
+    .to(from, { opacity: 0.25, duration: 0.5, ease: 'power1.in' }, 0);
+  return 0.6;
+};
+</script>
 <script type="application/json" id="kx-sources">{"sources": {"S1": {"ref": "../engine.js", "kind": "code"}, "S2": {"ref": "../../scripts/build.py", "kind": "code"}, "S3": {"ref": "../engine.css", "kind": "code"}}, "claims": {"C1": {"text": "Every slide is drawn on a 1920 by 1080 stage", "source": "S1", "locator": "engine.js top"}, "C2": {"text": "Motion has five levels: 0 Still, 1 Minimal, 2 Smooth, 3 Cinematic, 4 Insane", "source": "S1", "locator": "LEVELS"}, "C3": {"text": "The stage scales as a whole and never reflows per device", "source": "S3", "locator": "stage block"}, "C4": {"text": "build.py lints the source and refuses to write when there are errors", "source": "S2", "locator": "main()"}, "C5": {"text": "GSAP 3.13.0 is pinned and can be inlined for offline talks", "source": "S2", "locator": "GSAP_VER"}, "C6": {"text": "Fade transition runs 0.45 seconds", "source": "S1", "locator": "transition fade"}, "C7": {"text": "Slide transition runs 0.85 seconds", "source": "S1", "locator": "transition slide"}, "C8": {"text": "Wipe transition runs 1.0 seconds", "source": "S1", "locator": "transition wipe"}, "C9": {"text": "Zoom transition runs 1.1 seconds", "source": "S1", "locator": "transition zoom"}, "C10": {"text": "Iris transition runs 1.15 seconds", "source": "S1", "locator": "transition iris"}, "C11": {"text": "Canvas effects and cursor parallax start at level 3", "source": "S1", "locator": "fxStart"}, "C12": {"text": "Sentences over 24 words raise a warning", "source": "S2", "locator": "lint()"}}}</script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
@@ -383,6 +393,23 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
   // Each preset returns a tween/timeline that animates FROM a hidden state TO the element's natural state,
   // so completing it (progress(1)) always leaves the authored layout untouched.
   const P = {
+    // Author-designed move: data-move='{"y":140,"rotate":-6,"split":"words","stagger":0.04,"ease":"back.out(1.6)","dur":1.1}'.
+    // Distances are authored for Insane and scaled down per level, so one design serves every level.
+    move(el, L) {
+      let o = {};
+      try { o = JSON.parse(el.dataset.move || '{}'); } catch { console.error('[stagecraft] bad data-move JSON', el); }
+      if (L < 2) return P.fade(el, L);
+      const k = [0, 0, 0.5, 0.8, 1][L];
+      const { split: sp, stagger = 0.05, ease = 'expo.out', dur = 1, ...v } = o;
+      for (const q of ['x', 'y', 'xPercent', 'yPercent', 'rotate', 'rotateX', 'rotateY', 'skewX', 'skewY']) if (typeof v[q] === 'number') v[q] *= k;
+      for (const q of ['scale', 'scaleX', 'scaleY']) if (typeof v[q] === 'number') v[q] = 1 + (v[q] - 1) * k;
+      if (v.opacity === undefined) v.opacity = 0;
+      if (v.filter) v.clearProps = 'filter';
+      let t = el;
+      if (sp === 'children') t = kids(el);
+      else if (sp) { const r = split(el, sp === 'lines' ? 'lines' : 'lines,' + sp); t = r ? r[sp] : el; }
+      return G.from(t, { ...v, duration: dur, ease, stagger });
+    },
     fade(el, L) {
       const v = [null,
         { opacity: 0, duration: 0.5, ease: 'power2.out' },
@@ -485,7 +512,7 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
   };
 
   function animFor(el, L) {
-    const type = el.dataset.anim || 'fade';
+    const type = el.dataset.anim || (el.dataset.move ? 'move' : 'fade');
     if (type === 'none' || L < 1) return null;
     if (L < (+el.dataset.min || 0)) return null;
     const fn = P[type] || P.fade;
@@ -500,7 +527,7 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
   }
 
   function animated(s, filter) {
-    return [...s.querySelectorAll('[data-anim]')].filter(e => !e.closest('.notes') && filter(e));
+    return [...s.querySelectorAll('[data-anim],[data-move]')].filter(e => !e.closest('.notes,.kx-kept') && filter(e));
   }
   const stepOf = e => +(e.closest('[data-step]')?.dataset.step || 0);
 
@@ -573,10 +600,14 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
   }
 
   // ---------- transitions ----------
-  const AUTO4 = ['shutter', 'iris', 'wipe', 'zoom'];
+  // The deck chooses its cuts (slide data-transition, then body data-cut). The engine never rotates through a set,
+  // because a fixed rotation made every deck move the same way. Custom cuts (window.KX_CUT) run from level 2.
+  const BUILTIN_CUTS = ['fade', 'slide', 'wipe', 'iris', 'zoom', 'shutter'];
   function pickTransition(to, i, L) {
-    if (L >= 3) return to.dataset.transition || (L === 4 ? AUTO4[i % AUTO4.length] : 'wipe');
-    return L === 2 ? 'slide' : 'fade';
+    const t = to.dataset.transition || document.body.dataset.cut;
+    if (t && (window.KX_CUT || {})[t] && L >= 2) return t;
+    if (t && BUILTIN_CUTS.includes(t) && (L >= 3 || t === 'fade' || t === 'slide')) return t;
+    return L >= 2 ? 'slide' : 'fade';
   }
   const SLIDE_PROPS = 'opacity,transform,clipPath,filter,zIndex,visibility';
 
@@ -589,10 +620,13 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
       done(0); return;
     }
     from.classList.add('is-leaving');
-    const type = pickTransition(to, i, L);
+    // Shared elements: [data-keep="id"] on both slides travels from its old box to its new one (magic move).
+    const kept = [...to.querySelectorAll('[data-keep]')].map(b => [from.querySelector(`[data-keep="${CSS.escape(b.dataset.keep)}"]`), b]).filter(([a]) => a);
+    const type = kept.length && !to.dataset.transition ? 'fade' : pickTransition(to, i, L);
     const layers = to.querySelectorAll('[data-depth]');
     const tl = G.timeline({
       onComplete() {
+        kept.forEach(([a, b]) => { G.set(a, { clearProps: 'opacity' }); b.classList.remove('kx-kept'); });
         from.classList.remove('is-active', 'is-leaving');
         G.set([from, to], { clearProps: SLIDE_PROPS });
         if (layers.length) G.set(layers, { clearProps: 'transform' });
@@ -601,7 +635,19 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
     });
     G.set(to, { zIndex: 2 }); G.set(from, { zIndex: 1 });
     let overlap = 0.3;
-    switch (type) {
+    kept.forEach(([a, b]) => {
+      const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      if (!rb.width || !rb.height) return;
+      b.classList.add('kx-kept');
+      G.set(a, { opacity: 0 });
+      tl.from(b, { x: (ra.left - rb.left) / scale, y: (ra.top - rb.top) / scale, scaleX: ra.width / rb.width, scaleY: ra.height / rb.height,
+        transformOrigin: '0 0', duration: [0, 0.5, 0.8, 1.0, 1.15][L], ease: 'expo.inOut', clearProps: 'transform' }, 0);
+    });
+    const custom = (window.KX_CUT || {})[type];
+    if (custom) {
+      try { const r = custom({ from, to, dir, level: L, gsap: G, tl }); overlap = typeof r === 'number' ? r : 0.4; }
+      catch (e) { console.error('[stagecraft] KX_CUT failed: ' + type, e); tl.fromTo(to, { opacity: 0 }, { opacity: 1, duration: 0.45 }); }
+    } else switch (type) {
       case 'fade':
         tl.fromTo(to, { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'power2.out' }).to(from, { opacity: 0, duration: 0.45 }, 0);
         overlap = 0.15; break;
@@ -897,6 +943,28 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
   });
   slides.forEach(s => clearFocus(s));
 
+  // Node boxes from the g's transform and its rect, so this works before layout and on hidden slides.
+  function nodeBox(svg, id) {
+    const g = svg.querySelector(`[data-node="${CSS.escape(id)}"]`), r = g?.querySelector('rect');
+    if (!r) return null;
+    const m = g.transform.baseVal.consolidate()?.matrix, x = (m?.e || 0) + (+r.getAttribute('x') || 0), y = (m?.f || 0) + (+r.getAttribute('y') || 0);
+    const w = +r.getAttribute('width'), h = +r.getAttribute('height');
+    return { x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
+  }
+  // An edge with no d is routed box to box, so agents never hand-place endpoints.
+  document.querySelectorAll('svg path[data-edge]:not([d])').forEach(p => {
+    const [a, b] = p.dataset.edge.split(/\s+/).map(id => nodeBox(p.ownerSVGElement, id));
+    if (!a || !b) return;
+    const dx = b.cx - a.cx, dy = b.cy - a.cy;
+    if (Math.abs(dx) * a.h >= Math.abs(dy) * a.w) {
+      const sx = dx > 0 ? a.x + a.w : a.x, ex = dx > 0 ? b.x : b.x + b.w, mx = (sx + ex) / 2;
+      p.setAttribute('d', `M${sx} ${a.cy} C ${mx} ${a.cy}, ${mx} ${b.cy}, ${ex} ${b.cy}`);
+    } else {
+      const sy = dy > 0 ? a.y + a.h : a.y, ey = dy > 0 ? b.y : b.y + b.h, my = (sy + ey) / 2;
+      p.setAttribute('d', `M${a.cx} ${sy} C ${a.cx} ${my}, ${b.cx} ${my}, ${b.cx} ${ey}`);
+    }
+  });
+
   const tip = document.createElement('div'); tip.className = 'kx-tip'; stage.appendChild(tip);
   stage.addEventListener('pointerover', e => { const t = e.target.closest('[data-tip]'); if (t) { tip.textContent = t.dataset.tip; tip.classList.add('is-on'); } });
   stage.addEventListener('pointerout', e => { if (e.target.closest('[data-tip]')) tip.classList.remove('is-on'); });
@@ -1034,8 +1102,9 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
         issues.push({ type: 'clipped', el: desc(el) }); el.classList.add('kx-bad');
       }
       if (!hasText) continue;
-      const fs = parseFloat(cs.fontSize);
-      if (fs < 18) issues.push({ type: 'tiny-text', el: desc(el), px: fs });
+      // SVG font-size is in viewBox units; the screen CTM gives the size as rendered on the 1920 stage.
+      const fs = parseFloat(cs.fontSize) * (el.ownerSVGElement ? (el.getScreenCTM()?.a || scale) / scale : 1);
+      if (fs < 18) issues.push({ type: 'tiny-text', el: desc(el), px: Math.round(fs * 10) / 10 });
       const fg = rgba(cs.color), bg = bgOf(el);
       if (fg && bg && (fg[3] === undefined || fg[3] > 0.5)) {
         const a = lum(fg.slice(0, 3)), b = lum(bg), ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
@@ -1053,10 +1122,17 @@ h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; font-var
         issues.push({ type: 'overlap', el: desc(A.el), with: desc(B.el) }); A.el.classList.add('kx-bad'); B.el.classList.add('kx-bad');
       }
     }
+    for (const p of s.querySelectorAll('svg path[data-edge]')) {
+      const boxes = p.dataset.edge.split(/\s+/).map(id => nodeBox(p.ownerSVGElement, id)).filter(Boolean);
+      if (boxes.length < 2 || !p.getTotalLength) continue;
+      const near = pt => boxes.some(b => Math.max(b.x - pt.x, 0, pt.x - b.x - b.w) ** 2 + Math.max(b.y - pt.y, 0, pt.y - b.y - b.h) ** 2 <= 16 ** 2);
+      if (!near(p.getPointAtLength(0)) || !near(p.getPointAtLength(p.getTotalLength())))
+        issues.push({ type: 'loose-edge', el: `edge "${p.dataset.edge}"`, fix: 'an end does not touch its node; delete the d attribute and the engine routes it' });
+    }
     const OPEN = /statement|poster|quote|giant|cover|section/;
     if (!OPEN.test(s.dataset.layout || '') && !s.hasAttribute('data-open')) {
       let bottom = 0;
-      for (const el of s.querySelectorAll('h1,h2,h3,p,li,svg,img,video,canvas:not(.kx-fx),table,pre,figure,[data-node],[data-anim]')) {
+      for (const el of s.querySelectorAll('h1,h2,h3,p,li,svg,img,video,canvas:not(.kx-fx),table,pre,figure,[data-node],[data-anim],[data-move]')) {
         if (el.closest('.notes,[data-deco],.kx-fx,[hidden]')) continue;
         const r = el.getBoundingClientRect(); if (!r.height) continue;
         bottom = Math.max(bottom, (r.bottom - sr.top) / scale);

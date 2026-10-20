@@ -290,13 +290,24 @@ def lint(src_html, brief, brief_dir):
     if n >= 6 and len(set(layouts)) < min(4, n // 3 + 1):
         warnings.append(f"deck: only {len(set(layouts))} distinct layouts across {n} slides")
 
-    m = re.search(r'<body[^>]*\bdata-motion="(\d)"', src_html)
-    level = int(m.group(1)) if m else 2
+    body = re.search(r"<body[^>]*>", src_html)
+    body = body.group(0) if body else ""
+    m = re.search(r'\bdata-motion="(\d)"', body)
+    default = int(m.group(1)) if m else 2
+    lv = re.search(r'\bdata-levels="([^"]*)"', body)
+    offered = sorted({int(x) for x in re.split(r"[\s,]+", lv.group(1)) if x.isdigit()}) if lv else []
+    if not lv:
+        warnings.append('deck: <body> has no data-levels. Offer only the motion levels the user chose, for example data-levels="0 2 4"')
+    elif not offered or offered[-1] > 4:
+        errors.append(f'deck: data-levels="{lv.group(1)}" must list levels 0 to 4')
+    elif default not in offered:
+        errors.append(f"deck: default data-motion={default} is not one of the offered data-levels {offered}")
+    level = max(offered + [default])
     authored = sum(src_html.count(k) for k in ("KX_CUT", "KX_ENTER", "data-move=", "data-keep="))
     if level >= 2 and not (brief or {}).get("motion", {}).get("concept"):
         warnings.append('deck: brief.json has no "motion" concept. Design the motion for this subject (references/motion.md)')
     if level >= 3 and authored < 3:
-        errors.append("deck: motion is engine presets only. At Cinematic and Insane, author this deck's own cut and hero moves "
+        errors.append("deck: motion is engine presets only. When Cinematic or Insane is offered, author this deck's own cut and hero moves "
                       "(KX_CUT, data-move, data-keep, KX_ENTER) from its motion concept (references/motion.md)")
     elif level == 2 and not authored:
         warnings.append("deck: motion is engine presets only. Give the hero slides authored moves (data-move, data-keep)")

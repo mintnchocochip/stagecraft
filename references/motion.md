@@ -119,8 +119,12 @@ Return a timeline so the engine can finish it on navigation, or a cleanup functi
 
 ## 4. Levels
 
-The viewer can switch live with `M` (Shift+M goes back) or the HUD in the bottom-right. `?motion=N` in the URL forces a
-level. The deck's default is `<body data-motion="N">`; pick it from the interview.
+The deck offers only the levels the user chose in the interview: `<body data-levels="0 2 4" data-motion="4">`. The
+motion slider in the bottom-right lists only those levels and appears only while the pointer is over it (and briefly after
+`M` changes the level). `M` cycles through the offered levels (Shift+M goes back). With one level offered, the slider is
+hidden. `?motion=N` in the URL picks the nearest offered level. Still is always used for audit, static screenshots, PDF
+and reduced motion, even when it is not offered. Design and test motion only for the offered levels; do not spend effort
+on levels the user did not pick.
 
 | level | name | what plays |
 |---|---|---|

@@ -22,7 +22,7 @@ Read `references/content.md` now if the sources are large or mixed.
 ## 2. Aesthetic interview
 
 Read `references/interview.md` and run it: core concept, audience and setting, moodboard direction (three options from
-`references/design.md`, tailored), format and default motion level. When the user's own words name an intensity, use it as the default level without asking: "insane", "wild", "go crazy" = Insane (4); "cinematic", "dramatic" = Cinematic (3); "subtle", "clean" = Smooth (2); "no animation", "print" = Still (0). One round, using AskUserQuestion when available.
+`references/design.md`, tailored), format, and which motion levels the deck offers plus its default (multi-select; only those appear on the deck's motion slider). When the user's own words name an intensity, use it as the default level without asking: "insane", "wild", "go crazy" = Insane (4); "cinematic", "dramatic" = Cinematic (3); "subtle", "clean" = Smooth (2); "no animation", "print" = Still (0). One round, using AskUserQuestion when available.
 Skip what the user already answered. If they said to just build it, state your assumptions in a short paragraph and continue.
 
 ## 3. Claim ledger and outline
@@ -67,7 +67,7 @@ at build. Skeleton:
 /* one block per slide, scoped by a slide class: .s-cover { ... } */
 </style>
 </head>
-<body data-motion="2">
+<body data-levels="0 2 3" data-motion="2">   <!-- only the levels the user chose -->
 <div class="kx-viewport"><div class="kx-stage">
   <section class="slide s-cover" id="cover" data-layout="poster" data-claims="C1" data-fx="dotgrid">
     <h1 data-anim="chars">Assertion title</h1>

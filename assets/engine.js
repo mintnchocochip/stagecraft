@@ -22,13 +22,21 @@
   // ---------- motion level ----------
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // The deck offers only the levels chosen at creation (body data-levels="0 2 4"); all five when unset.
+  // Still (0) stays reachable for audit, ?static, PDF and reduced motion even when it is not offered.
+  const ALLOWED = (() => {
+    const v = [...new Set((document.body.dataset.levels || '').split(/[\s,]+/).filter(Boolean).map(Number))]
+      .filter(n => n >= 0 && n <= 4).sort((a, b) => a - b);
+    return v.length ? v : [0, 1, 2, 3, 4];
+  })();
+  const snap = v => ALLOWED.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
   let level = (() => {
     if (AUDIT) return 0;
-    if (qs.has('motion')) return clamp(+qs.get('motion') || 0, 0, 4);
+    if (qs.has('motion')) { const q = clamp(+qs.get('motion') || 0, 0, 4); return q === 0 ? 0 : snap(q); }
     const saved = store.get('kx-motion');
-    if (saved !== null) return clamp(+saved, 0, 4);
-    const def = clamp(+(document.body.dataset.motion ?? 2), 0, 4);
-    return reduced ? Math.min(def, 1) : def;
+    if (saved !== null && ALLOWED.includes(+saved)) return +saved;
+    const def = snap(clamp(+(document.body.dataset.motion ?? 2), 0, 4));
+    return reduced ? (ALLOWED.find(n => n <= 1) ?? 0) : def;
   })();
   const effLevel = () => (G ? level : Math.min(level, 1));
 
@@ -587,7 +595,10 @@
     else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); prev(); }
     else if (k === 'Home') go(0);
     else if (k === 'End') go(slides.length - 1);
-    else if (k === 'm' || k === 'M') setLevel((level + (e.shiftKey ? 4 : 1)) % 5);
+    else if ((k === 'm' || k === 'M') && ALLOWED.length > 1) {
+      const i = ALLOWED.indexOf(level), n = ALLOWED.length;
+      setLevel(ALLOWED[((i < 0 ? 0 : i) + (e.shiftKey ? n - 1 : 1)) % n]);
+    }
     else if (k === 'f' || k === 'F') (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.());
     else if (k === 'o' || k === 'O') toggleOverlay('overview');
     else if (k === 'n' || k === 'N') toggleOverlay('notes');
@@ -695,19 +706,22 @@
     <div class="kx-count"></div>
     <div class="kx-hud" role="group" aria-label="Motion level">
       <span class="kx-hud-label">Motion</span>
-      ${LEVELS.map((n, i) => `<button type="button" data-level="${i}" title="${n} (M to cycle)"><b></b><span>${n}</span></button>`).join('')}
+      ${ALLOWED.map(i => `<button type="button" data-level="${i}" title="${LEVELS[i]} (M to cycle)"><b></b><span>${LEVELS[i]}</span></button>`).join('')}
     </div>
     <div class="kx-toast"></div>
     <div class="kx-overlay" data-overlay="overview"><div class="kx-ov-grid"></div></div>
     <div class="kx-overlay" data-overlay="notes"><div class="kx-notes"></div></div>`;
   document.body.appendChild(ui);
   if (document.body.dataset.chrome === 'off') ui.classList.add('kx-chrome-off');
+  if (ALLOWED.length < 2) ui.classList.add('kx-one-level');
   const $ = s => ui.querySelector(s);
   $('.kx-hud').addEventListener('click', e => { const b = e.target.closest('[data-level]'); if (b) setLevel(+b.dataset.level); });
   $('.kx-ov-grid').innerHTML = slides.map((s, i) => `<button type="button" data-go="${i}"><em>${String(i + 1).padStart(2, '0')}</em>${titleOf(s, i)}</button>`).join('');
   $('.kx-ov-grid').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { closeOverlays(); go(+b.dataset.go); } });
 
   let hudT = 0;
+  // The motion HUD shows only while hovered (CSS), plus a short peek after M changes the level.
+  function peekHud() { const h = $('.kx-hud'); h.classList.add('is-peek'); clearTimeout(h._t); h._t = setTimeout(() => h.classList.remove('is-peek'), 1600); }
   function hudWake() { ui.classList.add('is-awake'); clearTimeout(hudT); hudT = setTimeout(() => ui.classList.remove('is-awake'), 2200); }
   function toast(msg) { const t = $('.kx-toast'); t.textContent = msg; t.classList.add('is-on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('is-on'), 1400); }
 
@@ -739,7 +753,8 @@
   function closeOverlays() { ui.querySelectorAll('.kx-overlay').forEach(o => o.classList.remove('is-on')); }
 
   function setLevel(L) {
-    level = clamp(L, 0, 4); store.set('kx-motion', level);
+    level = snap(clamp(L, 0, 4)); store.set('kx-motion', level);
+    peekHud();
     document.body.dataset.level = level;
     toast(`Motion · ${LEVELS[level]}${!G && level > 1 ? ' (GSAP not loaded, capped at Minimal)' : ''}`);
     chrome(); replay();

@@ -23,8 +23,13 @@ assumptions in one short paragraph before building.
    and described (for example "Unbounded, very wide geometric") and its colors,
    plus "Use my brand or moodboard" (they can paste a URL, brand book, screenshots, or adjectives). Make the three genuinely
    different: one restrained, one bold, one unexpected for the topic.
-4. **Format and motion.** HTML deck (default), PPTX (editable in PowerPoint), or both. Default motion level: Minimal, Smooth,
-   Cinematic, or Insane (the viewer can switch live in HTML).
+4. **Format.** HTML deck (default), PPTX (editable in PowerPoint), or both.
+5. **Motion levels (multi-select), then the default.** Ask which levels the deck should offer: Still (no motion, safe for
+   print and screen readers), Minimal (fades), Smooth (calm, authored moves at half strength), Cinematic (dramatic cuts and
+   canvas effects), Insane (everything at full strength, cursor-reactive). Then ask which one it opens at. Only the chosen
+   levels are built into the deck and shown on its motion slider; nothing else is offered. If the user named an intensity
+   in their request ("insane animations"), offer that level plus Still and confirm, instead of asking from scratch.
+   Write the answer as `<body data-levels="0 4" data-motion="4">` and in brief.json `motion.levels`.
 
 ## Round 2 (only when needed)
 

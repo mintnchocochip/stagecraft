@@ -57,7 +57,10 @@ body[data-level="0"] [data-hover] .kx-on-hover { transition: none; }
 .kx-hud button.is-on b { background: var(--accent, #fff); }
 .kx-hud span { font-size: 9px; opacity: 0; transition: opacity 0.2s; }
 .kx-hud button.is-cur span, .kx-hud button:hover span { opacity: 0.85; }
-.kx-ui.is-awake .kx-hud, .kx-ui.is-awake .kx-count { opacity: 1; transform: none; }
+.kx-ui.is-awake .kx-count { opacity: 1; }
+.kx-hud:hover, .kx-hud:focus-within, .kx-hud.is-peek { opacity: 1; transform: none; }
+.kx-hud::before { content: ''; position: absolute; inset: -40px -18px -14px -60px; }
+.kx-one-level .kx-hud { display: none; }
 .kx-chrome-off .kx-progress, .kx-chrome-off .kx-count, .kx-print-static .kx-ui { display: none; }
 .kx-toast { position: fixed; left: 50%; top: 22px; z-index: 95; transform: translate(-50%, -10px); padding: 10px 16px; background: rgba(0,0,0,0.7); color: #fff; opacity: 0; transition: 0.3s; pointer-events: none; }
 .kx-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
